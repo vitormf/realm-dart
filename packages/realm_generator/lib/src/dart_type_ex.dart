@@ -21,8 +21,8 @@ extension DartTypeEx on DartType {
   bool get isRealmSet => realmCollectionType == RealmCollectionType.set;
 
   ObjectType? get realmObjectType {
-    if (element == null) return null;
-    final realmModelAnnotation = realmModelChecker.firstAnnotationOfExact(element!);
+    if (element3 == null) return null;
+    final realmModelAnnotation = realmModelChecker.firstAnnotationOfExact(element3!);
     if (realmModelAnnotation == null) return null; // not a RealmModel
     final index = realmModelAnnotation.getField('baseType')!.getField('index')!.toIntValue()!;
     return ObjectType.values[index];

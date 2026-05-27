@@ -5,6 +5,7 @@ import 'dart:math';
 
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:realm_generator/src/annotation_value.dart';
 import 'package:realm_generator/src/expanded_context_span.dart';
@@ -45,7 +46,11 @@ extension AstNodeEx on AstNode {
 extension ElementEx on Element {
   FileSpan? get _shortSpan {
     try {
-      return spanForElement(this) as FileSpan;
+      final src = source;
+      if (src != null) {
+        final file = SourceFile.fromString(src.contents.data, url: src.uri);
+        return file.span(nameOffset, nameOffset + nameLength) as FileSpan;
+      }
     } catch (_) {}
     return null;
   }
@@ -58,12 +63,10 @@ extension ElementEx on Element {
   }
 
   Iterable<AnnotationValue> _annotationsInfoOfExact(TypeChecker checker) sync* {
-    // This is a bit backwards because of the api surface on TypeCheckers
-    final values = checker.annotationsOfExact(this).toSet();
     final node = declarationAstNode;
     for (final annotation in node.metadata) {
       final value = annotation.elementAnnotation?.computeConstantValue();
-      if (value != null && values.contains(value)) {
+      if (value != null && value.type != null && checker.isExactlyType(value.type!)) {
         yield AnnotationValue(annotation, value);
       }
     }
@@ -89,8 +92,12 @@ extension ElementEx on Element {
   }
 
   String? get remappedRealmName {
-    final mapTo = mapToChecker.annotationsOfExact(this).singleOrNull;
-    return mapTo?.getField('name')!.toStringValue();
+    final mapTo = metadata
+        .map((a) => a.computeConstantValue())
+        .whereType<DartObject>()
+        .where((v) => v.type != null && mapToChecker.isExactlyType(v.type!))
+        .singleOrNull;
+    return mapTo?.getField('name')?.toStringValue();
   }
 
   FileSpan? get span {

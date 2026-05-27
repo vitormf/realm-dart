@@ -1,12 +1,11 @@
 // Copyright 2021 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import 'package:analyzer/dart/element/element.dart';
 import 'package:source_span/source_span.dart';
 
 String formatSpans(
   String message, {
-  required Element element,
+  required Object? element,
   required String todo,
   SourceSpan? primarySpan,
   String? primaryLabel,
