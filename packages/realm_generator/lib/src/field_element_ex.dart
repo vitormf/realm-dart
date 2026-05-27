@@ -1,7 +1,7 @@
 // Copyright 2021 MongoDB, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import 'package:analyzer/src/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
@@ -380,15 +380,11 @@ extension FieldElementEx on FieldElement {
   }
 
   bool _isValidCollectionInitializer(Expression initExpression) {
-    if (initExpression is AstNodeImpl) {
-      final astNode = initExpression as AstNodeImpl;
-      final elementsNode = astNode.namedChildEntities.where((e) => e.name == 'elements').singleOrNull;
-      final nodeValue = elementsNode?.value;
-      if (nodeValue is NodeList && nodeValue.isEmpty) {
-        return true;
-      }
-    }
-    return false;
+    return switch (initExpression) {
+      ListLiteral l => l.elements.isEmpty,
+      SetOrMapLiteral s => s.elements.isEmpty,
+      _ => false,
+    };
   }
 
   bool _isValidFieldInitializer(Expression initExpression) {
