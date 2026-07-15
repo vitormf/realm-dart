@@ -19,10 +19,22 @@
 import Flutter
 import UIKit
 
-public class SwiftRealmPlugin: NSObject, FlutterPlugin {
+// This is the iOS plugin entry point. Under Swift Package Manager the plugin is
+// a single Swift target, so the Flutter `pluginClass: RealmPlugin` (see the
+// realm package pubspec) resolves directly to this class. `@objc(RealmPlugin)`
+// keeps the class discoverable by the Objective-C plugin registrant that
+// CocoaPods generates, so the same source serves both integrations.
+//
+// The former `RealmPlugin.m` Objective-C forwarder and `platform.mm` (which
+// only defined `realm_dart_get_bundle_id`) were dropped from the iOS target:
+// both are vestigial here — the symbol has no Dart call sites, and all native
+// work (file paths, database ops) goes through the realm_dart.xcframework
+// dylib's own exported symbols, loaded from the app bundle's Frameworks dir.
+@objc(RealmPlugin)
+public class RealmPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "realm", binaryMessenger: registrar.messenger())
-    let instance = SwiftRealmPlugin()
+    let instance = RealmPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 

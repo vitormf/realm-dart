@@ -9,12 +9,6 @@ realmPackageDir = File.expand_path(__dir__)
 # For example the tests app refers to the realm plugin using this path .../realm-dart/flutter/realm_flutter/tests/ios/.symlinks/plugins/realm/ios
 project_dir = File.expand_path("../../../../", realmPackageDir)
 puts "project dir is #{project_dir}"
-app_dir = File.expand_path("../", project_dir)
-puts "app dir is #{app_dir}"
-contents = IO.read("#{app_dir}/pubspec.yaml")
-match = contents.match("name:[ \r\n\t]*([a-z0-9_]*)")
-bundleId = match[1]
-puts "bundleId is #{bundleId}"
 
 
 Pod::Spec.new do |s|
@@ -28,12 +22,13 @@ Pod::Spec.new do |s|
   s.license                   = { :file => '../LICENSE' }
   s.author                    = { 'Realm' => 'help@realm.io' }
   s.source                    = { :path => '.' }
-  s.source_files              = 'Classes/**/*'
-  s.public_header_files       = 'Classes/**/*.h'
+  # Sources live under the Swift Package Manager layout so a single tree serves
+  # both CocoaPods and SPM. The plugin is Swift-only on iOS (the former ObjC
+  # forwarder and platform.mm were dropped as vestigial — see RealmPlugin.swift).
+  s.source_files              = 'realm/Sources/realm/**/*.swift'
   s.vendored_frameworks       = 'realm_dart.xcframework'
   s.dependency                  'Flutter'
-  s.platform                  = :ios, '8.0'
-  s.compiler_flags            = "-DBUNDLE_ID='\"#{bundleId}\"'"
+  s.platform                  = :ios, '13.0'
   s.library                   = 'c++', 'z', 'compression'
 
   s.swift_version             = '5.0'
@@ -47,5 +42,5 @@ Pod::Spec.new do |s|
                                     :execution_position => :before_headers
                                   }
                                 ]
-  s.resource_bundles          = { 'realm_privacy' => [ 'Resources/PrivacyInfo.xcprivacy' ] }
+  s.resource_bundles          = { 'realm_privacy' => [ 'realm/Sources/realm/Resources/PrivacyInfo.xcprivacy' ] }
 end
